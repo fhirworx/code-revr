@@ -1,49 +1,47 @@
 import streamlit as st
-import funcs as f
-import session as s
-import display as d
+from session import SessionManager, FormInputs, AppDisplay
 
 st.set_page_config(layout="wide")
 
+session_manager = SessionManager()
+form_inputs = FormInputs()
+display = AppDisplay()
+
 # Initialize all session variables
-s.all_session_vars()
+if st.session_state.hcpcs not in st.session_state:
+    session_manager.initialize_session_vars()
 
-# Code ID input section
-if st.session_state.code_id is None:
-    with st.container():
-        st.session_state.code_id = st.text_input("Enter a code ID", value="")
+if st.session_state['stage'] >= 1:
+    session_manager.update_session_state_directs()
+    session_manager.update_session_state_current_intensity()
+    session_manager.update_session_state_time_bounds()
 
-# Main review section
-if st.session_state.code_id is not None:
-    with st.container():
-        st.header(f"Code Review for {st.session_state.code_id}")
-        
-        # Update and display current lookups
-        s.current_lookups()
-        s.search_params()
-        s.initial_search_lookups()
-        s.review_crosswalks()
-        s.review_initial_results()
+if st.session_state['stage'] > 2:
+    session_manager.update_session_state_filtered_data()
+    session_manager.update_session_state_refinements()
 
-        # Refine search options
-        st.subheader("Refine Search")
-        s.set_refined_search_params()
+with st.sidebar:
+    form_inputs.display_form()
 
-        # Display search results
-        d.display_search_results()
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["#1. Direct Practice Expense", "#2. Comparison Codes", "#3. Input Refinements", "#4. Briefing Summary"])
 
-        # Display direct PE inputs
-        d.display_direct_pe_inputs()
+with tab1:
+    if st.session_state.hcpcs is not None:
+        display.direct_pe_inputs()
 
-        # Input section for current, RUC, and CMS values
-        d.display_value_input_sections()
+with tab2:
+    if st.session_state.tt_lower is not None:
+        display.filtered_table_results()
+        display.potential_crosswalks()
 
-        # Display potential crosswalk codes
-        d.display_potential_crosswalks()
+with tab3:
+    if st.session_state.current_work is not None:
+        display.value_input_sections()
 
-        # Display charts and briefing text
-        d.display_charts_and_text()
+with tab4:
+    if st.session_state.cms_work is not None:
+        display.charts_and_text()
 
-# Footer section with session state debugging (if needed)
 with st.container():
     st.write("Session State:", st.session_state)
