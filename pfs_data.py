@@ -2,10 +2,10 @@ import pandas as pd
 import streamlit as st
 
 @st.cache_data
-def load_ruc(filepath='raw.csv'):
+def load_ruc(filepath='./raw_data/raw.csv'):
     df = pd.read_csv(filepath)
     column_mapping = {
-        'CPT Code': 'code_id',
+        'CPT Code': 'hcpcs',
         'Long Desc': 'long_desc',
         'Global': 'global_value',
         'Work RVU': 'current_work',
@@ -43,30 +43,36 @@ def load_ruc(filepath='raw.csv'):
     return df
 
 @st.cache_data
-def load_equip(filepath='CMS-1784-P_PUF_Equip.xlsx'):
+def load_supply():
+    filepath = './raw_data/supply.xlsx'  # Updated for Excel file
     df = pd.read_excel(filepath)
     return df
 
 @st.cache_data
-def load_supply(filepath='CMS-1784-P_PUF_Supply.xlsx'):
+def load_equip():
+    filepath = './raw_data/equip.xlsx'
     df = pd.read_excel(filepath)
     return df
 
 @st.cache_data
-def load_labor(filepath='CMS-1784-P_PUF_Labor.xlsx'):
+def load_labor():
+    filepath = './raw_data/labor.xlsx'
     df = pd.read_excel(filepath)
     return df
 
 @st.cache_data
-def load_rvu(filepath='PPRRVU23_JUL.xlsx'):
-    df = pd.read_excel(filepath, skiprows=9)
-    new_column_names = ['hcpcs', 'mod', 'description', 'status_code', 'not_used_for_medicare_payment', 
-                        'work_rvu', 'non-fac_pe_rvu', 'non-fac_indicator', 'facility_pe_rvu', 'facility_indicator', 
-                        'mp_rvu', 'non-facility_total', 'facility_total', 'pctc_ind', 'glob_days', 'pre_op', 
-                        'intra_op', 'post_op', 'mult_proc', 'bilat_surg', 'asst_surg', 'co-_surg', 'team_surg', 
-                        'endo_base', 'conv_factor', 'phys_sup_diag', 'calc_flag', 'diag_img_ind', 'pe_opps_nf', 'pe_oppsf',
-                        'mp_opps']
+def load_rvu(filepath='./raw_data/rvu.csv'):
+    df = pd.read_csv(filepath, skiprows=12)
+    new_column_names = [
+        'hcpcs', 'mod', 'description', 'status_code', 'not_used_for_medicare_payment',
+        'work_rvu', 'nf_pe_rvu', 'nf_indicator', 'f_pe_rvu', 'f_indicator',
+        'mp_rvu', 'nf_total', 'f_total', 'pctc_ind', 'glob_days', 'pre_op',
+        'intra_op', 'post_op', 'mult_proc', 'bilat_surg', 'asst_surg', 'co_surg', 'team_surg',
+        'endo_base', 'conv_factor', 'phys_sup_diag', 'calc_flag', 'diag_img_ind', 'pe_opps_nf', 'pe_opps_f',
+        'mp_opps'
+    ]
     df.columns = new_column_names
-    df['mod'] = df['mod'].astype(str)
-    df['endo_base'] = df['endo_base'].astype(str)
+    columns_to_convert = ['hcpcs', 'mod', 'endo_base']
+    for column in columns_to_convert:
+        df[column] = df[column].astype(str)
     return df
